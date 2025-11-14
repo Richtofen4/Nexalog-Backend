@@ -1,0 +1,2196 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "version": "1.0.0",
+        "title": "Nexalog"
+    },
+    "servers": [
+        {
+            "url": "http://localhost:4000"
+        }
+    ],
+    "tags": [
+        {
+            "name": "Logowanie"
+        }
+    ],
+    "paths": {
+        "/api/auth/signup": {
+            "post": {
+                "tags": [
+                    "Logowanie"
+                ],
+                "summary": "Rejestracja użytkownika",
+                "requestBody": {
+                    "description": "Stwórz konto",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/User"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "Wykonano",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/User"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/auth/signin": {
+            "post": {
+                "tags": [
+                    "Logowanie"
+                ],
+                "summary": "Logowanie",
+                "requestBody": {
+                    "description": "Logowanie do systemu",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/User"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "Wykonano",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/User"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/auth/confirm/{confirmationCode}": {
+            "get": {
+                "tags": [
+                    "Logowanie"
+                ],
+                "summary": "Autoryzacja e-mail",
+                "parameters": [
+                    {
+                        "name": "confirmationCode",
+                        "in": "path",
+                        "required": false,
+                        "explode": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Wykonano",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "confirmationCode": {
+                                        "type": "string",
+                                        "example": "asgdhjaskdajksdhahjkgsdvahjsgdhjkasbdhjashgvdgasvhjdgasghcdahsvdghkasvhjdahjsd"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/auth/remember": {
+            "post": {
+                "tags": [
+                    "Logowanie"
+                ],
+                "summary": "Przypomnienie hasła",
+                "requestBody": {
+                    "description": "Zresetuj hasło",
+                    
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/User"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "Wykonano",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/User"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/auth/reset/{confirmationCode}": {
+            "get": {
+                "tags": [
+                    "Logowanie"
+                ],
+                "summary": "Reset hasła",
+                "parameters": [
+                    {
+                        "name": "confirmationCode",
+                        "in": "path",
+                        "required": false,
+                        "explode": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Wykonano",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "confirmationCode": {
+                                        "type": "string",
+                                        "example": "asgdhjaskdajksdhahjkgsdvahjsgdhjkasbdhjashgvdgasvhjdgasghcdahsvdghkasvhjdahjsd"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/user/profile": {
+  "post": {
+    "tags": ["Profil"],
+    "summary": "Aktualizacja profilu (nick i/lub avatar)",
+    "description": "Wyślij formularz multipart/form-data. Pola są opcjonalne: podaj dowolne z nich, które chcesz zmienić.",
+    "operationId": "updateAvatarFile",
+    "security": [
+      { "bearerAuth": [] }
+    ],
+    "requestBody": {
+      "required": true,
+      "content": {
+        "multipart/form-data": {
+          "schema": {
+            "type": "object",
+            "properties": {
+              "username": {
+                "type": "string",
+                "minLength": 3,
+                "maxLength": 24,
+                "pattern": "^[a-zA-Z0-9_]+$",
+                "example": "nowy_nick"
+              },
+              "avatar": {
+                "type": "string",
+                "format": "binary",
+                "description": "Plik obrazu (JPG, JPEG, PNG, WEBP)"
+              }
+            }
+          }
+        }
+      }
+    },
+    "responses": {
+      "200": {
+        "description": "Profil zaktualizowany",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": { "type": "string", "example": "Profil zaktualizowany." },
+                "username": { "type": "string", "example": "nowy_nick" },
+                "avatar": { "type": "string", "example": "https://res.cloudinary.com/.../avatars/abc123.webp" }
+              }
+            },
+            "examples": {
+              "tylko_nick": {
+                "value": {
+                  "message": "Profil zaktualizowany.",
+                  "username": "nowy_nick",
+                  "avatar": "https://res.cloudinary.com/.../avatars/stary.webp"
+                }
+              },
+              "tylko_avatar": {
+                "value": {
+                  "message": "Profil zaktualizowany.",
+                  "username": "obecny_nick",
+                  "avatar": "https://res.cloudinary.com/.../avatars/nowy.webp"
+                }
+              },
+              "nick_i_avatar": {
+                "value": {
+                  "message": "Profil zaktualizowany.",
+                  "username": "nowy_nick",
+                  "avatar": "https://res.cloudinary.com/.../avatars/nowy.webp"
+                }
+              }
+            }
+          }
+        }
+      },
+      "400": {
+        "description": "Błąd walidacji / nick zajęty / brak zmian / problem z plikiem",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": { "type": "string" }
+              }
+            },
+            "examples": {
+              "brak_zmian": { "value": { "message": "Brak zmian do zapisania" } },
+              "nick_zajety": { "value": { "message": "Ten nick jest zajęty." } },
+              "walidacja_nicku": { "value": { "message": "Nick musi mieć 3–24 znaki (litery, cyfry, _)." } },
+              "plik_za_duzy": { "value": { "message": "Plik jest za duży (max 5MB)." } },
+              "zly_typ_pliku": { "value": { "message": "Nieprawidłowy typ pliku. Dozwolone: JPG, JPEG, PNG, WEBP." } }
+            }
+          }
+        }
+      },
+      "401": {
+        "description": "Brak autoryzacji",
+        "content": {
+          "application/json": {
+            "schema": { "type": "object", "properties": { "message": { "type": "string", "example": "Brak autoryzacji" } } }
+          }
+        }
+      },
+      "404": {
+        "description": "Użytkownik nie znaleziony",
+        "content": {
+          "application/json": {
+            "schema": { "type": "object", "properties": { "message": { "type": "string", "example": "Nie znaleziono użytkownika." } } }
+          }
+        }
+      },
+      "500": {
+        "description": "Wewnętrzny błąd serwera",
+        "content": {
+          "application/json": {
+            "schema": { "type": "object", "properties": { "message": { "type": "string", "example": "Wewnętrzny błąd serwera" } } }
+          }
+        }
+      }
+    }
+  }
+},
+
+"/api/user/password": {
+  "put": {
+    "tags": ["Profil"],
+    "summary": "Zmiana hasła użytkownika",
+    "description": "Wymaga podania starego hasła, nowego hasła i jego potwierdzenia. Nowe hasło musi mieć min. 8 znaków oraz zawierać min. 1 dużą literę, 1 małą literę i 1 cyfrę.",
+    "security": [{ "bearerAuth": [] }],
+    "requestBody": {
+      "required": true,
+      "content": {
+        "application/json": {
+          "schema": {
+            "type": "object",
+            "properties": {
+              "oldPassword": { "type": "string", "example": "St@reHaslo123" },
+              "newPassword": { "type": "string", "example": "NoweHaslo123" },
+              "confirmPassword": { "type": "string", "example": "NoweHaslo123" }
+            },
+            "required": ["oldPassword", "newPassword", "confirmPassword"]
+          }
+        }
+      }
+    },
+    "responses": {
+      "200": {
+        "description": "Hasło zmienione",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": { "type": "string", "example": "Hasło zostało zmienione." }
+              }
+            }
+          }
+        }
+      },
+      "400": {
+        "description": "Błąd walidacji lub niepoprawne stare hasło",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": { "type": "string", "example": "Stare hasło jest niepoprawne." }
+              }
+            }
+          }
+        }
+      },
+      "401": {
+        "description": "Brak autoryzacji",
+        "content": {
+          "application/json": {
+            "schema": { "type": "object", "properties": { "message": { "type": "string", "example": "Unauthorized" } } }
+          }
+        }
+      },
+      "404": {
+        "description": "Użytkownik nie znaleziony",
+        "content": {
+          "application/json": {
+            "schema": { "type": "object", "properties": { "message": { "type": "string", "example": "Nie znaleziono użytkownika." } } }
+          }
+        }
+      },
+      "500": {
+        "description": "Błąd serwera",
+        "content": {
+          "application/json": {
+            "schema": { "type": "object", "properties": { "message": { "type": "string", "example": "Wewnętrzny błąd serwera" } } }
+          }
+        }
+      }
+    }
+  }
+},
+
+"/api/friends/sendRequest": {
+  "post": {
+    "tags": ["Znajomi"],
+    "summary": "Wyślij zaproszenie do znajomych",
+    "description": "Wysyła zaproszenie na podstawie nazwy użytkownika. Wymaga autoryzacji (Bearer JWT).",
+    "security": [{ "bearerAuth": [] }],
+    "requestBody": {
+      "required": true,
+      "content": {
+        "application/json": {
+          "schema": {
+            "type": "object",
+            "properties": {
+              "username": { "type": "string", "example": "someUser" }
+            },
+            "required": ["username"]
+          }
+        }
+      }
+    },
+    "responses": {
+      "201": {
+        "description": "Zaproszenie wysłane",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": { "type": "string", "example": "Prośba została wysłana" }
+              }
+            }
+          }
+        }
+      },
+      "400": {
+        "description": "Błąd walidacji (np. wysyłanie do samego siebie lub brak username)",
+        "content": {
+          "application/json": {
+            "schema": { "type": "object", "properties": { "message": { "type": "string", "example": "Nie możesz zaprosić samego siebie." } } }
+          }
+        }
+      },
+      "401": {
+        "description": "Brak autoryzacji",
+        "content": {
+          "application/json": {
+            "schema": { "type": "object", "properties": { "message": { "type": "string", "example": "Unauthorized" } } }
+          }
+        }
+      },
+      "404": {
+        "description": "Użytkownik nie znaleziony",
+        "content": {
+          "application/json": {
+            "schema": { "type": "object", "properties": { "message": { "type": "string", "example": "Nie znaleziono użytkownika" } } }
+          }
+        }
+      },
+      "409": {
+        "description": "Konflikt (relacja już istnieje / oczekujące zaproszenie / już znajomi / zablokowane)",
+        "content": {
+          "application/json": {
+            "schema": { "type": "object", "properties": { "message": { "type": "string", "example": "Już jesteście znajomymi." } } }
+          }
+        }
+      },
+      "500": {
+        "description": "Błąd serwera",
+        "content": {
+          "application/json": {
+            "schema": { "type": "object", "properties": { "message": { "type": "string", "example": "Wewnętrzny błąd serwera" } } }
+          }
+        }
+      }
+    }
+  }
+},
+"/api/friends/acceptRequest": {
+  "post": {
+    "tags": ["Znajomi"],
+    "summary": "Akceptuj zaproszenie do znajomych i (jeśli trzeba) utwórz DM",
+    "security": [{ "bearerAuth": [] }],
+    "requestBody": {
+      "required": true,
+      "content": {
+        "application/json": {
+          "schema": {
+            "type": "object",
+            "properties": {
+              "otherUserId": { "type": "integer", "example": 42 }
+            },
+            "required": ["otherUserId"]
+          }
+        }
+      }
+    },
+    "responses": {
+      "200": {
+        "description": "Zaproszenie zaakceptowane. Zwraca konwersację 1:1 (tworzoną on-demand).",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": { "type": "string", "example": "Zaproszenie zaakceptowane." },
+                "conversation": {
+                  "type": "object",
+                  "properties": {
+                    "ID_Conversation": { "type": "integer", "example": 17 },
+                    "ID_USER1": { "type": "integer", "example": 1 },
+                    "ID_USER2": { "type": "integer", "example": 42 },
+                    "createdAt": { "type": "string", "format": "date-time", "example": "2025-08-27T10:12:34.000Z" }
+                  }
+                }
+              },
+              "required": ["message", "conversation"]
+            }
+          }
+        }
+      },
+      "400": {
+        "description": "Niepoprawne dane wejściowe",
+        "content": {
+          "application/json": {
+            "schema": { "type": "object", "properties": { "message": { "type": "string", "example": "Niepoprawny identyfikator użytkownika." } } }
+          }
+        }
+      },
+      "403": {
+        "description": "Brak uprawnień / nieprawidłowa operacja",
+        "content": {
+          "application/json": {
+            "schema": { "type": "object", "properties": { "message": { "type": "string", "example": "Nie możesz zaakceptować własnego zaproszenia." } } }
+          }
+        }
+      },
+      "404": {
+        "description": "Zaproszenie lub użytkownik nie znaleziony",
+        "content": {
+          "application/json": {
+            "schema": { "type": "object", "properties": { "message": { "type": "string", "example": "Zaproszenie nie istnieje." } } }
+          }
+        }
+      },
+      "409": {
+        "description": "Niedozwolony stan (np. już zaakceptowane / brak pending)",
+        "content": {
+          "application/json": {
+            "schema": { "type": "object", "properties": { "message": { "type": "string", "example": "Już jesteście znajomymi." } } }
+          }
+        }
+      },
+      "500": {
+        "description": "Błąd serwera",
+        "content": {
+          "application/json": {
+            "schema": { "type": "object", "properties": { "message": { "type": "string", "example": "Wewnętrzny błąd serwera" } } }
+          }
+        }
+      }
+    }
+  }
+},
+
+"/api/friends/rejectRequest": {
+  "delete": {
+    "tags": ["Znajomi"],
+    "summary": "Odrzucenie lub anulowanie zaproszenia do znajomych",
+    "security": [{ "bearerAuth": [] }],
+    "requestBody": {
+      "required": true,
+      "content": {
+        "application/json": {
+          "schema": {
+            "type": "object",
+            "properties": {
+              "otherUserId": { "type": "integer", "example": 42 }
+            },
+            "required": ["otherUserId"]
+          }
+        }
+      }
+    },
+    "responses": {
+      "204": { "description": "Zaproszenie odrzucone/anulowane" },
+      "400": {
+        "description": "Niepoprawne dane",
+        "content": { "application/json": { "schema": { "type": "object", "properties": { "message": { "type": "string", "example": "Niepoprawny identyfikator użytkownika." } } } } }
+      },
+      "403": {
+        "description": "Brak uprawnień / relacja zablokowana",
+        "content": { "application/json": { "schema": { "type": "object", "properties": { "message": { "type": "string", "example": "Relacja jest zablokowana." } } } } }
+      },
+      "404": {
+        "description": "Zaproszenie / użytkownik nie znaleziony",
+        "content": { "application/json": { "schema": { "type": "object", "properties": { "message": { "type": "string", "example": "Zaproszenie nie istnieje." } } } } }
+      },
+      "409": {
+        "description": "Niedozwolony stan (np. relacja już zaakceptowana)",
+        "content": { "application/json": { "schema": { "type": "object", "properties": { "message": { "type": "string", "example": "Relacja jest już zaakceptowana. Użyj funkcji usuwania znajomego." } } } } }
+      },
+      "500": {
+        "description": "Błąd serwera",
+        "content": { "application/json": { "schema": { "type": "object", "properties": { "message": { "type": "string", "example": "Wewnętrzny błąd serwera" } } } } }
+      }
+    }
+  }
+},
+"/api/friends/removeRequest": {
+  "delete": {
+    "tags": ["Znajomi"],
+    "summary": "Usunięcie znajomego / relacji",
+    "security": [{ "bearerAuth": [] }],
+    "requestBody": {
+      "required": true,
+      "content": {
+        "application/json": {
+          "schema": {
+            "type": "object",
+            "properties": {
+              "otherUserId": { "type": "integer", "example": 42 }
+            },
+            "required": ["otherUserId"]
+          }
+        }
+      }
+    },
+    "responses": {
+      "204": { "description": "Relacja usunięta (idempotentnie, bez body)" },
+      "400": {
+        "description": "Niepoprawne dane",
+        "content": {
+          "application/json": {
+            "schema": { "type": "object", "properties": { "message": { "type": "string", "example": "Niepoprawny identyfikator użytkownika." } } }
+          }
+        }
+      },
+      "404": {
+        "description": "Użytkownik nie znaleziony (autoryzowany / target)",
+        "content": {
+          "application/json": {
+            "schema": { "type": "object", "properties": { "message": { "type": "string", "example": "Nie znaleziono użytkownika." } } }
+          }
+        }
+      },
+      "500": {
+        "description": "Błąd serwera",
+        "content": {
+          "application/json": {
+            "schema": { "type": "object", "properties": { "message": { "type": "string", "example": "Wewnętrzny błąd serwera" } } }
+          }
+        }
+      }
+    }
+  }
+},
+"/api/friends/blockUser": {
+  "put": {
+    "tags": ["Znajomi"],
+    "summary": "Zablokowanie użytkownika",
+    "security": [{ "bearerAuth": [] }],
+    "requestBody": {
+      "required": true,
+      "content": {
+        "application/json": {
+          "schema": {
+            "type": "object",
+            "properties": {
+              "otherUserId": { "type": "integer", "example": 42 }
+            },
+            "required": ["otherUserId"]
+          }
+        }
+      }
+    },
+    "responses": {
+      "200": {
+        "description": "Zablokowano (lub już był zablokowany)",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": { "type": "string", "example": "Użytkownik zablokowany." }
+              }
+            }
+          }
+        }
+      },
+      "400": {
+        "description": "Niepoprawne dane (np. próba zablokowania samego siebie)",
+        "content": {
+          "application/json": {
+            "schema": { "type": "object", "properties": { "message": { "type": "string", "example": "Nie możesz zablokować samego siebie." } } }
+          }
+        }
+      },
+      "404": {
+        "description": "Autoryzowany użytkownik nie znaleziony",
+        "content": {
+          "application/json": {
+            "schema": { "type": "object", "properties": { "message": { "type": "string", "example": "Nie znaleziono użytkownika." } } }
+          }
+        }
+      },
+      "500": {
+        "description": "Błąd serwera",
+        "content": {
+          "application/json": {
+            "schema": { "type": "object", "properties": { "message": { "type": "string", "example": "Wewnętrzny błąd serwera" } } }
+          }
+        }
+      }
+    }
+  }
+},
+"/api/server/createServer": {
+  "post": {
+    "tags": ["Serwery"],
+    "summary": "Utwórz serwer",
+    "security": [{ "bearerAuth": [] }],
+    "requestBody": {
+      "required": true,
+      "content": {
+        "multipart/form-data": {
+          "schema": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "example": "Mój pierwszy serwer"
+              },
+              "icon": {
+                "type": "string",
+                "format": "binary",
+                "description": "Opcjonalna ikona serwera (jpg, png, webp; ≤5MB)"
+              }
+            },
+            "required": ["name"]
+          }
+        }
+      }
+    },
+    "responses": {
+      "201": {
+        "description": "Serwer utworzony",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": { "type": "string", "example": "Serwer został stworzony" },
+                "server": {
+                  "type": "object",
+                  "properties": {
+                    "ID_Server": { "type": "integer", "example": 7 },
+                    "name": { "type": "string", "example": "Mój pierwszy serwer" },
+                    "ID_USER": { "type": "integer", "example": 1 },
+                    "icon_url": { "type": "string", "example": "https://res.cloudinary.com/.../image.png" },
+                    "code": { "type": "string", "example": "A1b2C3d4E5" },
+                    "createdAt": { "type": "string", "format": "date-time" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "400": { "description": "Błędne dane wejściowe" },
+      "401": { "description": "Brak autoryzacji" },
+      "500": { "description": "Błąd serwera" }
+    }
+  }
+},
+"/api/server/updateServer": {
+  "put": {
+    "tags": ["Serwery"],
+    "summary": "Aktualizacja serwera (nazwa i/lub ikona)",
+    "security": [{ "bearerAuth": [] }],
+    "requestBody": {
+      "required": true,
+      "content": {
+        "multipart/form-data": {
+          "schema": {
+            "type": "object",
+            "properties": {
+              "serverId": { "type": "integer", "example": 12 },
+              "name":     { "type": "string",  "example": "Mój serwer 2.0" },
+              "icon":     { "type": "string",  "format": "binary" }
+            },
+            "required": ["serverId", "name"]
+          }
+        }
+      }
+    },
+    "responses": {
+      "200": {
+        "description": "Serwer zaktualizowany",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": { "type": "string", "example": "Serwer zaktualizowany" },
+                "server": {
+                  "type": "object",
+                  "properties": {
+                    "ID_Server": { "type": "integer", "example": 12 },
+                    "name":      { "type": "string",  "example": "Mój serwer 2.0" },
+                    "icon_url":  { "type": "string",  "example": "https://res.cloudinary.com/.../server-icons/abc.jpg" },
+                    "ID_USER":   { "type": "integer", "example": 1 },
+                    "updatedAt": { "type": "string",  "format": "date-time" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "400": { "description": "Niepoprawne dane (serverId, nazwa lub plik)" },
+      "403": { "description": "Brak uprawnień (nie jesteś właścicielem)" },
+      "404": { "description": "Nie znaleziono użytkownika lub serwera" },
+      "500": { "description": "Błąd serwera" }
+    }
+  }
+},
+"/api/server/myServers": {
+  "get": {
+    "tags": ["Serwery"],
+    "summary": "Lista serwerów użytkownika (paginacja 0-indeksowana)",
+    "security": [{ "bearerAuth": [] }],
+    "parameters": [
+      {
+        "name": "page",
+        "in": "query",
+        "required": false,
+        "schema": { "type": "integer", "minimum": 0, "default": 0, "example": 0 },
+        "description": "Numer strony (0-indeksowana). Domyślnie 0."
+      },
+      {
+        "name": "limit",
+        "in": "query",
+        "required": false,
+        "schema": { "type": "integer", "minimum": 1, "maximum": 100, "default": 10, "example": 10 },
+        "description": "Rozmiar strony. Domyślnie 10. Alias: size"
+      }
+    ],
+    "responses": {
+      "200": {
+        "description": "Lista serwerów",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "totalItems": { "type": "integer", "example": 12 },
+                "servers": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "ID_Server": { "type": "integer", "example": 5 },
+                      "name": { "type": "string", "example": "Mój serwer 2.0" },
+                      "icon_url": { "type": "string", "example": "https://..." },
+                      "code": { "type": "string", "example": "eHoQkUSKN" },
+                      "ID_USER": { "type": "integer", "example": 1 },
+                      "createdAt": { "type": "string", "format": "date-time" }
+                    }
+                  }
+                },
+                "totalPages": { "type": "integer", "example": 2 },
+                "currentPage": { "type": "integer", "example": 0 },
+                "pageSize": { "type": "integer", "example": 10 }
+              }
+            }
+          }
+        }
+      },
+      "404": {
+        "description": "Strona poza zakresem",
+        "content": { "application/json": { "schema": { "type": "object", "properties": {
+          "message": { "type": "string", "example": "Strona poza zakresem." },
+          "totalItems": { "type": "integer", "example": 12 },
+          "totalPages": { "type": "integer", "example": 2 },
+          "requestedPage": { "type": "integer", "example": 3 }
+        } } } }
+      },
+      "401": { "description": "Brak autoryzacji" },
+      "500": { "description": "Błąd serwera" }
+    }
+  }
+},
+
+"/api/friends/myFriends": {
+  "get": {
+    "tags": ["Znajomi"],
+    "summary": "Lista zaakceptowanych znajomych użytkownika (z paginacją)",
+    "security": [{ "bearerAuth": [] }],
+    "parameters": [
+      {
+        "name": "page",
+        "in": "query",
+        "required": false,
+        "schema": { "type": "integer", "minimum": 0, "example": 0 },
+        "description": "Numer strony (0-indeksowana). Domyślnie 0."
+      },
+      {
+        "name": "limit",
+        "in": "query",
+        "required": false,
+        "schema": { "type": "integer", "minimum": 1, "maximum": 100, "example": 10 },
+        "description": "Rozmiar strony. Domyślnie 10. Alias: size"
+      }
+    ],
+    "responses": {
+      "200": {
+        "description": "Lista znajomych",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "totalItems": { "type": "integer", "example": 42 },
+                "friends": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "friendshipId": { "type": "integer", "example": 123 },
+                      "since": { "type": "string", "format": "date-time", "example": "2025-08-20T10:11:12.000Z" },
+                      "lastUpdated": { "type": "string", "format": "date-time", "example": "2025-08-26T10:11:12.000Z" },
+                      "isRequester": { "type": "boolean", "example": true },
+                      "user": {
+                        "type": "object",
+                        "properties": {
+                          "ID_USER": { "type": "integer", "example": 7 },
+                          "username": { "type": "string", "example": "jan_kowalski" },
+                          "avatar": { "type": "string", "example": "https://res.cloudinary.com/.../avatar.png" }
+                        }
+                      }
+                    }
+                  }
+                },
+                "totalPages": { "type": "integer", "example": 5 },
+                "currentPage": { "type": "integer", "example": 0 },
+                "pageSize": { "type": "integer", "example": 10 }
+              }
+            }
+          }
+        }
+      },
+      "401": {
+        "description": "Brak autoryzacji",
+        "content": {
+          "application/json": {
+            "schema": { "type": "object", "properties": { "message": { "type": "string", "example": "Unauthorized" } } }
+          }
+        }
+      },
+      "500": {
+        "description": "Błąd serwera",
+        "content": {
+          "application/json": {
+            "schema": { "type": "object", "properties": { "message": { "type": "string", "example": "Wewnętrzny błąd serwera" } } }
+          }
+        }
+      }
+    }
+  }
+},
+"/api/friends/myFriendPending": {
+  "get": {
+    "tags": ["Znajomi"],
+    "summary": "Lista oczekujących zaproszeń (przychodzące i wychodzące)",
+    "security": [{ "bearerAuth": [] }],
+    "responses": {
+      "200": {
+        "description": "Zaproszenia oczekujące",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "totalItems": { "type": "integer", "example": 2 },
+                "incoming": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "friendshipId": { "type": "integer", "example": 15 },
+                      "since": { "type": "string", "format": "date-time" },
+                      "fromUserId": { "type": "integer", "example": 7 },
+                      "user": {
+                        "type": "object",
+                        "properties": {
+                          "ID_USER": { "type": "integer", "example": 7 },
+                          "username": { "type": "string", "example": "anna" },
+                          "avatar": { "type": "string", "example": "https://..." }
+                        }
+                      }
+                    }
+                  }
+                },
+                "outgoing": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/PendingItem" }
+                }
+              }
+            }
+          }
+        }
+      },
+      "401": { "description": "Unauthorized" },
+      "500": { "description": "Błąd serwera" }
+    }
+  }
+},
+"components": {
+  "schemas": {
+    "PendingItem": {
+      "type": "object",
+      "properties": {
+        "friendshipId": { "type": "integer", "example": 21 },
+        "since": { "type": "string", "format": "date-time" },
+        "fromUserId": { "type": "integer", "example": 1 },
+        "user": {
+          "type": "object",
+          "properties": {
+            "ID_USER": { "type": "integer", "example": 9 },
+            "username": { "type": "string", "example": "marek" },
+            "avatar": { "type": "string", "example": "https://..." }
+          }
+        }
+      }
+    }
+  }
+},
+"/api/friends/myFriendBlocked": {
+  "get": {
+    "tags": ["Znajomi"],
+    "summary": "Lista zablokowanych relacji (bez paginacji)",
+    "security": [{ "bearerAuth": [] }],
+    "responses": {
+      "200": {
+        "description": "Zablokowane relacje",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "totalItems": { "type": "integer", "example": 2 },
+                "blockedByMe": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "friendshipId": { "type": "integer", "example": 11 },
+                      "since": { "type": "string", "format": "date-time" },
+                      "blockedByUserId": { "type": "integer", "example": 1 },
+                      "user": {
+                        "type": "object",
+                        "properties": {
+                          "ID_USER": { "type": "integer", "example": 7 },
+                          "username": { "type": "string", "example": "ania" },
+                          "avatar": { "type": "string", "example": "https://..." }
+                        }
+                      }
+                    }
+                  }
+                },
+                "blockedMe": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "friendshipId": { "type": "integer", "example": 14 },
+                      "since": { "type": "string", "format": "date-time" },
+                      "blockedByUserId": { "type": "integer", "example": 42 },
+                      "user": {
+                        "type": "object",
+                        "properties": {
+                          "ID_USER": { "type": "integer", "example": 42 },
+                          "username": { "type": "string", "example": "marek" },
+                          "avatar": { "type": "string", "example": "https://..." }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "401": { "description": "Unauthorized" },
+      "500": { "description": "Błąd serwera" }
+    }
+  }
+},
+"/api/chat/conversations/{conversationId}/messages": {
+  "get": {
+    "tags": ["Czat prywatny"],
+    "summary": "Pobierz ostatnie wiadomości z konwersacji",
+    "security": [{ "bearerAuth": [] }],
+    "parameters": [
+      { "name": "conversationId", "in": "path", "required": true, "schema": { "type": "integer" } },
+      { "name": "limit", "in": "query", "required": false, "schema": { "type": "integer", "default": 30, "maximum": 100 } },
+      { "name": "beforeId", "in": "query", "required": false, "schema": { "type": "integer" }, "description": "Kursor – pobierz wiadomości starsze niż to ID" }
+    ],
+    "responses": {
+      "200": {
+        "description": "OK",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "messages": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "ID_Message": { "type": "integer" },
+                      "ID_Conversation": { "type": "integer" },
+                      "ID_Sender": { "type": "integer" },
+                      "content": { "type": "string" },
+                      "edited": { "type": "boolean" },
+                      "deleted": { "type": "boolean" },
+                      "createdAt": { "type": "string", "format": "date-time" }
+                    }
+                  }
+                },
+                "nextBeforeId": { "type": "integer", "nullable": true }
+              }
+            }
+          }
+        }
+      },
+      "403": { "description": "Brak dostępu" },
+      "404": { "description": "Konwersacja nie istnieje" }
+    }
+  },
+  "post": {
+    "tags": ["Czat prywatny"],
+    "summary": "Wyślij wiadomość do konwersacji",
+    "security": [{ "bearerAuth": [] }],
+    "parameters": [
+      { "name": "conversationId", "in": "path", "required": true, "schema": { "type": "integer" } }
+    ],
+    "requestBody": {
+      "required": true,
+      "content": {
+        "application/json": {
+          "schema": {
+            "type": "object",
+            "properties": {
+              "content": { "type": "string", "example": "Cześć!" }
+            },
+            "required": ["content"]
+          }
+        }
+      }
+    },
+    "responses": {
+      "201": {
+        "description": "Wysłano",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": { "type": "string", "example": "Wiadomość wysłana." },
+                "data": {
+                  "type": "object",
+                  "properties": {
+                    "ID_Message": { "type": "integer" },
+                    "ID_Conversation": { "type": "integer" },
+                    "ID_Sender": { "type": "integer" },
+                    "content": { "type": "string" },
+                    "createdAt": { "type": "string", "format": "date-time" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "400": { "description": "Błąd walidacji (np. pusta treść)" },
+      "403": { "description": "Brak dostępu" },
+      "404": { "description": "Konwersacja nie istnieje" }
+    }
+  }
+},
+"/api/chat/conversations/{conversationId}/messages/{messageId}": {
+  "put": {
+    "tags": ["Czat prywatny"],
+    "summary": "Edytuj własną wiadomość",
+    "description": "Pozwala zmienić treść **własnej** wiadomości w danej konwersacji. Zwraca zaktualizowany obiekt wiadomości.",
+    "security": [{ "bearerAuth": [] }],
+    "parameters": [
+      {
+        "name": "conversationId",
+        "in": "path",
+        "required": true,
+        "schema": { "type": "integer", "example": 1 }
+      },
+      {
+        "name": "messageId",
+        "in": "path",
+        "required": true,
+        "schema": { "type": "integer", "example": 123 }
+      }
+    ],
+    "requestBody": {
+      "required": true,
+      "content": {
+        "application/json": {
+          "schema": {
+            "type": "object",
+            "properties": {
+              "content": { "type": "string", "maxLength": 5000, "example": "Poprawiona treść wiadomości" }
+            },
+            "required": ["content"]
+          }
+        }
+      }
+    },
+    "responses": {
+      "200": {
+        "description": "Wiadomość zaktualizowana",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": { "type": "string", "example": "Wiadomość zaktualizowana" },
+                "data": {
+                  "type": "object",
+                  "properties": {
+                    "ID_Message": { "type": "integer", "example": 123 },
+                    "ID_Conversation": { "type": "integer", "example": 1 },
+                    "ID_Sender": { "type": "integer", "example": 7 },
+                    "content": { "type": "string", "example": "Poprawiona treść wiadomości" },
+                    "edited": { "type": "boolean", "example": true },
+                    "deleted": { "type": "boolean", "example": false },
+                    "createdAt": { "type": "string", "format": "date-time" },
+                    "updatedAt": { "type": "string", "format": "date-time" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "400": {
+        "description": "Błąd walidacji (np. pusta treść / zbyt długa / błędne ID)",
+        "content": {
+          "application/json": {
+            "schema": { "type": "object", "properties": { "message": { "type": "string", "example": "Treść wiadomości jest wymagana" } } }
+          }
+        }
+      },
+      "403": {
+        "description": "Brak uprawnień (nie jesteś autorem albo nie należysz do konwersacji)",
+        "content": {
+          "application/json": {
+            "schema": { "type": "object", "properties": { "message": { "type": "string", "example": "Możesz modyfikować tylko własne wiadomości." } } }
+          }
+        }
+      },
+      "404": {
+        "description": "Nie znaleziono konwersacji lub wiadomości",
+        "content": {
+          "application/json": {
+            "schema": { "type": "object", "properties": { "message": { "type": "string", "example": "Wiadomość nie istnieje." } } }
+          }
+        }
+      },
+      "500": {
+        "description": "Błąd serwera",
+        "content": {
+          "application/json": {
+            "schema": { "type": "object", "properties": { "message": { "type": "string", "example": "Wewnętrzny błąd serwera" } } }
+          }
+        }
+      }
+    }
+  },
+  "delete": {
+    "tags": ["Czat prywatny"],
+    "summary": "Usuń własną wiadomość (soft delete)",
+    "description": "Oznacza wiadomość jako usuniętą (flaga `deleted=true`, treść pusta). Idempotentne – ponowny DELETE zwróci 204.",
+    "security": [{ "bearerAuth": [] }],
+    "parameters": [
+      {
+        "name": "conversationId",
+        "in": "path",
+        "required": true,
+        "schema": { "type": "integer", "example": 1 }
+      },
+      {
+        "name": "messageId",
+        "in": "path",
+        "required": true,
+        "schema": { "type": "integer", "example": 123 }
+      }
+    ],
+    "responses": {
+      "204": { "description": "Wiadomość usunięta (soft delete)" },
+      "403": {
+        "description": "Brak uprawnień",
+        "content": {
+          "application/json": {
+            "schema": { "type": "object", "properties": { "message": { "type": "string", "example": "Możesz modyfikować tylko własne wiadomości." } } }
+          }
+        }
+      },
+      "404": {
+        "description": "Nie znaleziono",
+        "content": {
+          "application/json": {
+            "schema": { "type": "object", "properties": { "message": { "type": "string", "example": "Wiadomość nie istnieje." } } }
+          }
+        }
+      },
+      "500": {
+        "description": "Błąd serwera",
+        "content": {
+          "application/json": {
+            "schema": { "type": "object", "properties": { "message": { "type": "string", "example": "Wewnętrzny błąd serwera" } } }
+          }
+        }
+      }
+    }
+  }
+},
+"/api/server/joinServer": {
+  "post": {
+    "tags": ["Serwery"],
+    "summary": "Dołącz do serwera po kodzie",
+    "security": [{ "bearerAuth": [] }],
+    "requestBody": {
+      "required": true,
+      "content": {
+        "application/json": {
+          "schema": {
+            "type": "object",
+            "required": ["code"],
+            "properties": {
+              "code": { "type": "string", "example": "2jmFGFErA8" }
+            }
+          }
+        }
+      }
+    },
+    "responses": {
+      "201": {
+        "description": "Dołączono do serwera",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": { "type": "string", "example": "Dołączono do serwera" },
+                "server": {
+                  "type": "object",
+                  "properties": {
+                    "ID_Server": { "type": "integer", "example": 7 },
+                    "name": { "type": "string", "example": "Mój pierwszy serwer" },
+                    "icon_url": { "type": "string", "nullable": true, "example": null }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "200": {
+        "description": "Użytkownik już jest członkiem lub właścicielem",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": { "type": "string", "example": "Jesteś już członkiem tego serwera" },
+                "server": {
+                  "type": "object",
+                  "properties": {
+                    "ID_Server": { "type": "integer", "example": 7 }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "400": {
+        "description": "Brak kodu",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": { "type": "string", "example": "Kod jest wymagany" }
+              }
+            }
+          }
+        }
+      },
+      "404": {
+        "description": "Nieprawidłowy kod",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": { "type": "string", "example": "Nieprawidłowy kod" }
+              }
+            }
+          }
+        }
+      },
+      "401": { "description": "Brak autoryzacji" },
+      "500": { "description": "Błąd serwera" }
+    }
+  }
+},
+
+"/api/server/leave": {
+  "delete": {
+    "tags": ["Serwery"],
+    "summary": "Opuszczenie serwera przez zalogowanego użytkownika",
+    "security": [{ "bearerAuth": [] }],
+    "requestBody": {
+      "required": true,
+      "content": {
+        "application/json": {
+          "schema": {
+            "type": "object",
+            "required": ["serverId"],
+            "properties": {
+              "serverId": { "type": "integer", "minimum": 1, "example": 12 }
+            }
+          }
+        }
+      }
+    },
+    "responses": { "200": { "description": "OK" }, "404": { "description": "Nie znaleziono" } }
+  }
+},
+
+
+"/api/server/deleteServer": {
+  "delete": {
+    "tags": ["Serwery"],
+    "summary": "Usunięcie serwera (tylko właściciel)",
+    "security": [{ "bearerAuth": [] }],
+    "requestBody": {
+      "required": true,
+      "content": {
+        "application/json": {
+          "schema": {
+            "type": "object",
+            "required": ["serverId"],
+            "properties": {
+              "serverId": { "type": "integer", "minimum": 1, "example": 12 }
+            }
+          }
+        }
+      }
+    },
+    "responses": {
+      "200": {
+        "description": "Serwer został usunięty",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": { "type": "string", "example": "Serwer został usunięty." }
+              }
+            }
+          }
+        }
+      },
+      "403": { "description": "Brak uprawnień (nie jesteś właścicielem)" },
+      "404": { "description": "Serwer nie istnieje" },
+      "401": { "description": "Brak autoryzacji" },
+      "500": { "description": "Błąd serwera" }
+    }
+  }
+},
+
+"/api/server/kick": {
+  "post": {
+    "tags": ["Serwery"],
+    "summary": "Wyrzucenie użytkownika z serwera (tylko właściciel)",
+    "security": [{ "bearerAuth": [] }],
+    "requestBody": {
+      "required": true,
+      "content": {
+        "application/json": {
+          "schema": {
+            "type": "object",
+            "required": ["serverId", "targetUserId"],
+            "properties": {
+              "serverId": { "type": "integer", "minimum": 1, "example": 12 },
+              "targetUserId": { "type": "integer", "minimum": 1, "example": 34 }
+            }
+          }
+        }
+      }
+    },
+    "responses": {
+      "200": {
+        "description": "Użytkownik został wyrzucony",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": { "type": "string", "example": "Użytkownik został wyrzucony z serwera." },
+                "kickedUserId": { "type": "integer", "example": 34 },
+                "server": {
+                  "type": "object",
+                  "properties": {
+                    "ID_Server": { "type": "integer", "example": 12 },
+                    "name": { "type": "string", "example": "Nexalog — PRz" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "403": { "description": "Brak uprawnień (tylko właściciel)" },
+      "404": { "description": "Serwer lub członkostwo nie istnieje" },
+      "409": { "description": "Nie można wyrzucić właściciela" },
+      "401": { "description": "Brak autoryzacji" },
+      "500": { "description": "Błąd serwera" }
+    }
+  }
+},
+
+"/api/server/code": {
+  "post": {
+    "tags": ["Serwery"],
+    "summary": "Pobranie aktualnego kodu dołączenia (tylko właściciel)",
+    "security": [{ "bearerAuth": [] }],
+    "requestBody": {
+      "required": true,
+      "content": {
+        "application/json": {
+          "schema": {
+            "type": "object",
+            "required": ["serverId"],
+            "properties": {
+              "serverId": { "type": "integer", "minimum": 1, "example": 12 }
+            }
+          }
+        }
+      }
+    },
+    "responses": {
+      "200": {
+        "description": "Zwraca aktualny kod dołączenia",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": { "type": "string", "example": "Kod dołączenia pobrany." },
+                "server": {
+                  "type": "object",
+                  "properties": {
+                    "ID_Server": { "type": "integer", "example": 12 },
+                    "name": { "type": "string", "example": "Nexalog — PRz" },
+                    "code": { "type": "string", "example": "eHoQkUSKN1" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "403": { "description": "Brak uprawnień (tylko właściciel)" },
+      "404": { "description": "Serwer nie istnieje" },
+      "401": { "description": "Brak autoryzacji" },
+      "500": { "description": "Błąd serwera" }
+    }
+  }
+},
+
+"/api/server/regenerate-code": {
+  "put": {
+    "tags": ["Serwery"],
+    "summary": "Regeneracja (wylosowanie) nowego kodu dołączenia (tylko właściciel)",
+    "security": [{ "bearerAuth": [] }],
+    "requestBody": {
+      "required": true,
+      "content": {
+        "application/json": {
+          "schema": {
+            "type": "object",
+            "required": ["serverId"],
+            "properties": {
+              "serverId": { "type": "integer", "minimum": 1, "example": 12 }
+            }
+          }
+        }
+      }
+    },
+    "responses": {
+      "200": {
+        "description": "Kod został zmieniony",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": { "type": "string", "example": "Kod dołączenia został zaktualizowany." },
+                "server": {
+                  "type": "object",
+                  "properties": {
+                    "ID_Server": { "type": "integer", "example": 12 },
+                    "name": { "type": "string", "example": "Nexalog — PRz" },
+                    "code": { "type": "string", "example": "A1b2C3d4E5" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "403": { "description": "Brak uprawnień (tylko właściciel)" },
+      "404": { "description": "Serwer nie istnieje" },
+      "401": { "description": "Brak autoryzacji" },
+      "500": { "description": "Błąd serwera lub nie udało się wygenerować unikalnego kodu" }
+    }
+  }
+},
+
+"/api/channel/create": {
+  "post": {
+    "tags": ["Kanały"],
+    "summary": "Utworzenie kanału tekstowego (tylko właściciel serwera)",
+    "security": [{ "bearerAuth": [] }],
+    "requestBody": {
+      "required": true,
+      "content": {
+        "application/json": {
+          "schema": {
+            "type": "object",
+            "required": ["serverId", "name"],
+            "properties": {
+              "serverId": { "type": "integer", "minimum": 1, "example": 5 },
+              "name": { "type": "string", "example": "ogólny" }
+            }
+          }
+        }
+      }
+    },
+    "responses": {
+      "201": {
+        "description": "Kanał został utworzony",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": { "type": "string", "example": "Kanał został utworzony." },
+                "channel": {
+                  "type": "object",
+                  "properties": {
+                    "ID_Channel": { "type": "integer", "example": 17 },
+                    "ID_Server": { "type": "integer", "example": 5 },
+                    "name": { "type": "string", "example": "ogólny" },
+                    "type": { "type": "string", "example": "text" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "403": { "description": "Brak uprawnień (tylko właściciel)" },
+      "404": { "description": "Serwer nie istnieje" },
+      "409": { "description": "Kanał o tej nazwie już istnieje" },
+      "400": { "description": "Nieprawidłowe dane wejściowe" },
+      "401": { "description": "Brak autoryzacji" },
+      "500": { "description": "Błąd serwera" }
+    }
+  }
+},
+
+"/api/channel/change": {
+  "put": {
+    "tags": ["Kanały"],
+    "summary": "Zmiana nazwy kanału (tylko właściciel serwera)",
+    "security": [{ "bearerAuth": [] }],
+    "requestBody": {
+      "required": true,
+      "content": {
+        "application/json": {
+          "schema": {
+            "type": "object",
+            "required": ["serverId", "channelId", "name"],
+            "properties": {
+              "serverId": { "type": "integer", "minimum": 1, "example": 5 },
+              "channelId": { "type": "integer", "minimum": 1, "example": 17 },
+              "name": { "type": "string", "example": "chat" }
+            }
+          }
+        }
+      }
+    },
+    "responses": {
+      "200": {
+        "description": "Nazwa kanału została zaktualizowana",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": { "type": "string", "example": "Nazwa kanału została zaktualizowana." },
+                "channel": {
+                  "type": "object",
+                  "properties": {
+                    "ID_Channel": { "type": "integer", "example": 17 },
+                    "ID_Server": { "type": "integer", "example": 5 },
+                    "name": { "type": "string", "example": "chat" },
+                    "type": { "type": "string", "example": "text" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "403": { "description": "Brak uprawnień (tylko właściciel)" },
+      "404": { "description": "Serwer/kanał nie istnieje" },
+      "409": { "description": "Kanał o tej nazwie już istnieje" },
+      "400": { "description": "Nieprawidłowe dane wejściowe" },
+      "401": { "description": "Brak autoryzacji" },
+      "500": { "description": "Błąd serwera" }
+    }
+  }
+},
+
+"/api/channel/delete": {
+  "delete": {
+    "tags": ["Kanały"],
+    "summary": "Usunięcie kanału (tylko właściciel serwera)",
+    "security": [{ "bearerAuth": [] }],
+    "requestBody": {
+      "required": true,
+      "content": {
+        "application/json": {
+          "schema": {
+            "type": "object",
+            "required": ["serverId", "channelId"],
+            "properties": {
+              "serverId": { "type": "integer", "minimum": 1, "example": 5 },
+              "channelId": { "type": "integer", "minimum": 1, "example": 17 }
+            }
+          }
+        }
+      }
+    },
+    "responses": {
+      "200": {
+        "description": "Kanał został usunięty",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": { "type": "string", "example": "Kanał został usunięty." }
+              }
+            }
+          }
+        }
+      },
+      "403": { "description": "Brak uprawnień (tylko właściciel)" },
+      "404": { "description": "Serwer/kanał nie istnieje" },
+      "400": { "description": "Nieprawidłowe dane wejściowe" },
+      "401": { "description": "Brak autoryzacji" },
+      "500": { "description": "Błąd serwera" }
+    }
+  }
+},
+
+
+"/api/channel/list": {
+  "post": {
+    "tags": ["Kanały"],
+    "summary": "Lista wszystkich kanałów na serwerze (dla członków lub właściciela)",
+    "security": [{ "bearerAuth": [] }],
+    "requestBody": {
+      "required": true,
+      "content": {
+        "application/json": {
+          "schema": {
+            "type": "object",
+            "required": ["serverId"],
+            "properties": {
+              "serverId": { "type": "integer", "minimum": 1, "example": 5 }
+            }
+          }
+        }
+      }
+    },
+    "responses": {
+      "200": {
+        "description": "Lista kanałów",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": { "type": "string", "example": "Pobrano listę kanałów." },
+                "server": {
+                  "type": "object",
+                  "properties": {
+                    "ID_Server": { "type": "integer", "example": 5 },
+                    "name": { "type": "string", "example": "Nexalog — PRz" }
+                  }
+                },
+                "channels": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "ID_Channel": { "type": "integer", "example": 17 },
+                      "ID_Server": { "type": "integer", "example": 5 },
+                      "name": { "type": "string", "example": "ogólny" },
+                      "type": { "type": "string", "example": "text" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "403": { "description": "Brak uprawnień (nie jesteś członkiem serwera)" },
+      "404": { "description": "Serwer nie istnieje" },
+      "400": { "description": "Nieprawidłowe dane wejściowe" },
+      "401": { "description": "Brak autoryzacji" },
+      "500": { "description": "Błąd serwera" }
+    }
+  }
+},
+
+"/api/server/list": {
+  "post": {
+    "tags": ["Serwery"],
+    "summary": "Lista wszystkich użytkowników na serwerze (owner lub członek)",
+    "security": [{ "bearerAuth": [] }],
+    "requestBody": {
+      "required": true,
+      "content": {
+        "application/json": {
+          "schema": {
+            "type": "object",
+            "required": ["serverId"],
+            "properties": {
+              "serverId": { "type": "integer", "minimum": 1, "example": 5 }
+            }
+          }
+        }
+      }
+    },
+    "responses": {
+      "200": {
+        "description": "Lista członków serwera",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": { "type": "string", "example": "Pobrano listę członków." },
+                "server": {
+                  "type": "object",
+                  "properties": {
+                    "ID_Server": { "type": "integer", "example": 5 },
+                    "name": { "type": "string", "example": "Nexalog — PRz" }
+                  }
+                },
+                "totalItems": { "type": "integer", "example": 3 },
+                "members": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "ID_USER": { "type": "integer", "example": 12 },
+                      "username": { "type": "string", "example": "jan_kowalski" },
+                      "avatar": { "type": "string", "example": "https://res.cloudinary.com/.../avatar.png" },
+                      "joinedAt": { "type": "string", "format": "date-time", "example": "2025-08-20T10:11:12.000Z" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "403": { "description": "Brak uprawnień (nie jesteś członkiem serwera)" },
+      "404": { "description": "Serwer nie istnieje" },
+      "400": { "description": "Nieprawidłowe dane wejściowe" },
+      "401": { "description": "Brak autoryzacji" },
+      "500": { "description": "Błąd serwera" }
+    }
+  }
+},
+
+
+
+"/api/user/banUser": {
+  "put": {
+    "tags": ["Admin"],
+    "summary": "Zbanuj użytkownika",
+    "security": [{ "bearerAuth": [] }],
+    "requestBody": {
+      "required": true,
+      "content": {
+        "application/json": {
+          "schema": {
+            "type": "object",
+            "required": ["otherUserId"],
+            "properties": {
+              "otherUserId": { "type": "integer", "example": 42 }
+            }
+          }
+        }
+      }
+    },
+    "responses": {
+      "200": {
+        "description": "Użytkownik został zbanowany",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": { "type": "string", "example": "Użytkownik został zbanowany" },
+                "user": {
+                  "type": "object",
+                  "properties": {
+                    "ID_USER": { "type": "integer", "example": 42 },
+                    "isBanned": { "type": "boolean", "example": true }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "400": {
+        "description": "Błąd walidacji lub już zbanowany",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": { "type": "string", "example": "Użytkownik jest już zbanowany" }
+              }
+            }
+          }
+        }
+      },
+      "404": { "description": "Nie znaleziono użytkownika" },
+      "401": { "description": "Brak autoryzacji" },
+      "500": { "description": "Błąd serwera" }
+    }
+  }
+},
+"/api/user/unbanUser": {
+  "put": {
+    "tags": ["Admin"],
+    "summary": "Odbanuj użytkownika",
+    "security": [{ "bearerAuth": [] }],
+    "requestBody": {
+      "required": true,
+      "content": {
+        "application/json": {
+          "schema": {
+            "type": "object",
+            "required": ["otherUserId"],
+            "properties": {
+              "otherUserId": { "type": "integer", "example": 42 }
+            }
+          }
+        }
+      }
+    },
+    "responses": {
+      "200": {
+        "description": "Użytkownik został odbanowany",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": { "type": "string", "example": "Użytkownik został odbanowany" },
+                "user": {
+                  "type": "object",
+                  "properties": {
+                    "ID_USER": { "type": "integer", "example": 42 },
+                    "isBanned": { "type": "boolean", "example": false }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "400": {
+        "description": "Błąd walidacji lub nie jest zbanowany",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": { "type": "string", "example": "Użytkownik nie jest zbanowany" }
+              }
+            }
+          }
+        }
+      },
+      "404": { "description": "Nie znaleziono użytkownika" },
+      "401": { "description": "Brak autoryzacji" },
+      "500": { "description": "Błąd serwera" }
+    }
+  }
+},
+"/api/user/getAllUser": {
+  "get": {
+    "tags": ["Admin"],
+    "summary": "Lista wszystkich użytkowników (z paginacją)",
+    "security": [{ "bearerAuth": [] }],
+    "parameters": [
+      { "name": "page", "in": "query", "schema": { "type": "integer", "minimum": 0, "example": 0 } },
+      { "name": "limit", "in": "query", "schema": { "type": "integer", "minimum": 0, "example": 20 } }
+    ],
+    "responses": {
+      "200": {
+        "description": "OK",
+        "content": {
+          "application/json": { "$ref": "#/components/schemas/PagedUsersResponse" }
+        }
+      },
+      "404": {
+        "description": "Strona poza zakresem",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/OutOfRangeResponse" }
+          }
+        }
+      },
+      "401": { "description": "Brak autoryzacji" },
+      "500": { "description": "Błąd serwera" }
+    }
+  }
+},
+"/api/user/getBanUser": {
+  "get": {
+    "tags": ["Admin"],
+    "summary": "Lista zbanowanych użytkowników (z paginacją)",
+    "security": [{ "bearerAuth": [] }],
+    "parameters": [
+      { "name": "page", "in": "query", "schema": { "type": "integer", "minimum": 0, "example": 0 } },
+      { "name": "limit", "in": "query", "schema": { "type": "integer", "minimum": 0, "example": 20 } }
+    ],
+    "responses": {
+      "200": {
+        "description": "OK",
+        "content": {
+          "application/json": { "$ref": "#/components/schemas/PagedUsersResponse" }
+        }
+      },
+      "404": {
+        "description": "Strona poza zakresem",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/OutOfRangeResponse" }
+          }
+        }
+      },
+      "401": { "description": "Brak autoryzacji" },
+      "500": { "description": "Błąd serwera" }
+    }
+  }
+},
+"/api/user/getUnbanUser": {
+  "get": {
+    "tags": ["Admin"],
+    "summary": "Lista niezbanowanych użytkowników (z paginacją)",
+    "security": [{ "bearerAuth": [] }],
+    "parameters": [
+      { "name": "page", "in": "query", "schema": { "type": "integer", "minimum": 0, "example": 0 } },
+      { "name": "limit", "in": "query", "schema": { "type": "integer", "minimum": 0, "example": 20 } }
+    ],
+    "responses": {
+      "200": {
+        "description": "OK",
+        "content": {
+          "application/json": { "$ref": "#/components/schemas/PagedUsersResponse" }
+        }
+      },
+      "404": {
+        "description": "Strona poza zakresem",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/OutOfRangeResponse" }
+          }
+        }
+      },
+      "401": { "description": "Brak autoryzacji" },
+      "500": { "description": "Błąd serwera" }
+    }
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    },
+
+    "components": {
+        "securitySchemes": {
+            "bearerAuth": {
+                "type": "http",
+                "scheme": "bearer",
+                "bearerFormat": "JWT"
+            }
+        },
+        "schemas": {
+          "PagedUsersResponse": {
+  "type": "object",
+  "properties": {
+    "totalItems": { "type": "integer", "example": 123 },
+    "users": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "ID_USER":   { "type": "integer", "example": 42 },
+          "username":  { "type": "string",  "example": "jan.kowalski" },
+          "email":     { "type": "string",  "example": "jan@example.com" },
+          "isBanned":  { "type": "boolean", "example": false },
+          "createdAt": { "type": "string",  "format": "date-time" }
+        }
+      }
+    },
+    "totalPages":  { "type": "integer", "example": 7 },
+    "currentPage": { "type": "integer", "example": 2 },
+    "pageSize":    { "type": "integer", "example": 20 }
+  }
+},
+"OutOfRangeResponse": {
+  "type": "object",
+  "properties": {
+    "message":       { "type": "string",  "example": "Strona poza zakresem" },
+    "totalItems":    { "type": "integer", "example": 0 },
+    "totalPages":    { "type": "integer", "example": 0 },
+    "requsetedPage": { "type": "integer", "example": 5 }
+  }
+},
+
+            "User": {
+                "type": "object",
+                "properties": {
+                    "email": {
+                        "type": "string",
+                        "example": "email@gmail.com"
+                    },
+                    "password": {
+                        "type": "string",
+                        "example": "Password1234"
+                    },
+                    "username": {
+                        "type": "string",
+                        "example": "username"
+                    }
+                },
+                "required": ["email", "password", "username"]
+            },
+            "Remember": {
+                "type": "object",
+                "properties": {
+                    "email": {
+                        "type": "string",
+                        "example": "email@gmail.com"
+                    },
+                    "password": {
+                        "type": "string",
+                        "example": "password123"
+                    }
+                },
+                "required": ["email", "password"]
+            }
+        }
+    }
+}
