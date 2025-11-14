@@ -92,7 +92,7 @@ exports.logIn = async (req, res, jwt) => {
             });
         }
         
-        if (user.status === "Created" || user.status === "Pending") {
+        if (user.status === "Created" || user.status === "Pending" || user.status === "Active") {
             return res.status(401).send({ message: "Zweryfikuj swój email"});
         }
 
