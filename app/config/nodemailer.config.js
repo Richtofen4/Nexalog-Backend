@@ -58,27 +58,43 @@ const {
   BACKEND_URL,
 } = process.env;
 
-// fallbacki awaryjne
 const fromAddress = MAIL_FROM || SMTP_USER || "no-reply@example.com";
 const frontendUrl = FRONTEND_URL || "http://localhost:5173";
 const backendUrl = BACKEND_URL || "http://localhost:4000";
 
-// transporter SMTP
+// --- TRANSPORT ---
+
+// dla Gmaila wystarczy service: 'gmail'
 const transport = nodemailer.createTransport({
-  host: SMTP_HOST,
-  port: Number(SMTP_PORT) || 587,
-  secure: false,
+  service: "gmail",
   auth: {
     user: SMTP_USER,
     pass: SMTP_PASS,
   },
 });
 
-// pomocnicza funkcja
+// sprawdzenie po starcie czy logowanie do SMTP działa
+transport.verify((err, success) => {
+  if (err) {
+    console.error("SMTP VERIFY ERROR:", err);
+  } else {
+    console.log("SMTP READY:", success);
+  }
+});
+
+// pomocnicza funkcja z mocniejszym logowaniem
 function sendMailSafe(options) {
-  return transport.sendMail(options).catch((err) => {
-    console.error("Mail error:", err);
-  });
+  console.log("SENDING MAIL TO:", options.to, "SUBJECT:", options.subject);
+
+  return transport
+    .sendMail(options)
+    .then((info) => {
+      console.log("MAIL SENT OK:", info.messageId);
+      return info;
+    })
+    .catch((err) => {
+      console.error("MAIL ERROR:", err); // tu chcemy pełny błąd
+    });
 }
 
 module.exports.sendConfirmationEmail = (name, email, confirmationCode) => {
