@@ -1,12 +1,12 @@
 // ustawienia dockera
-/*
+
 module.exports = {
     HOST: "localhost",
     USER: "postgres",
     PASSWORD: "postgres",
     DB: "postgres",
     port: 5432,
-    dialect: "postgres",asd
+    dialect: "postgres",
     pool: {
         max: 100,
         min: 0,
@@ -15,8 +15,8 @@ module.exports = {
     },
     logging: false
 };
-*/
 
+/*
 module.exports = {
   HOST: process.env.DB_HOST,
   USER: process.env.DB_USER,
@@ -31,3 +31,4 @@ module.exports = {
     idle: 10000,
   },
 };
+*/

@@ -3,20 +3,18 @@ const { Op } = db.Sequelize;
 const Server = db.Server;
 const Server_member = db.Server_member;
 const Channel = db.Channel;
-const Channel_message = db.Channel_message; // model z pliku channel_message.model.js
+const Channel_message = db.Channel_message;
 const User = db.User;
+const notificationService = require("./notification.service");
 
-// pomocniczo
 const toId = v => { const n = Number(v); return Number.isInteger(n) && n > 0 ? n : null; };
 
-// --- sprawdzenie: kanał istnieje + user jest członkiem serwera ---
 async function ensureChannelMembership(channelId, userId) {
   const channel = await Channel.findByPk(channelId, {
     attributes: ["ID_Channel", "ID_Server", "name"],
   });
   if (!channel) return { error: { code: 404, message: "Kanał nie istnieje." } };
 
-  // sprawdź serwer + członkostwo
   const server = await Server.findByPk(channel.ID_Server, {
     attributes: ["ID_Server", "ID_USER", "name"],
   });
@@ -35,54 +33,63 @@ async function ensureChannelMembership(channelId, userId) {
   return { channel, server };
 }
 
-// 1) Wysłanie wiadomości
-exports.sendMessage = async (req, res, userId, channelId, content) => {
+exports.sendMessage = async (req, res, userId, channelId, content, name = null) => {
   try {
     const cId = toId(channelId);
-    if (!cId) return res.status(400).send({ message: "Nieprawidłowy identyfikator kanału." });
+    if (!cId) {
+      return res.status(400).send({ message: "Nieprawidłowy identyfikator kanału." });
+    }
     if (!content || typeof content !== "string" || !content.trim()) {
       return res.status(400).send({ message: "Treść wiadomości jest wymagana." });
     }
 
-    const { error, channel } = await ensureChannelMembership(cId, userId);
+    const { error } = await ensureChannelMembership(cId, userId);
     if (error) return res.status(error.code).send({ message: error.message });
 
     const msg = await Channel_message.create({
       ID_Channel: cId,
-      ID_USER: userId,
-      content: content.trim(),
+      ID_USER:    userId,
+      content:    content.trim(),
+      name,
     });
 
-    const io = req.app?.locals?.io;
+    const io = req.app?.locals?.io || req.app.get?.("io");
     if (io) {
-      const u = await User.findByPk(userId, { attributes: ["ID_USER", "username", "avatar"] });
+      const u = await User.findByPk(userId, {
+        attributes: ["ID_USER", "username", "avatar"],
+      });
+
       const payload = {
         ID_Channel_message: msg.ID_Channel_message,
-        ID_Channel: msg.ID_Channel,
-        content: msg.content,
-        createdAt: msg.createdAt,
+        ID_Channel:         msg.ID_Channel,
+        content:            msg.content,
+        createdAt:          msg.createdAt,
         user: {
-          ID_USER: u?.ID_USER ?? userId,
-          username: u?.username ?? "unknown",
-          avatar: u?.avatar ?? "",
+          ID_USER:   u?.ID_USER ?? userId,
+          username:  u?.username ?? "unknown",
+          avatar:    u?.avatar ?? "",
         },
       };
 
       io.to(`chan:${msg.ID_Channel}`).emit("channel-message:new", payload);
     }
 
+    notificationService
+      .createForChannelMessage(msg)
+      .catch((err) => console.error("Notification error:", err));
 
     return res.status(201).send({
       message: "Wiadomość wysłana.",
       data: {
         ID_Channel_message: msg.ID_Channel_message,
-        ID_Channel: msg.ID_Channel,
-        ID_USER: userId,
-        content: msg.content,
-        createdAt: msg.createdAt,
-      }
+        ID_Channel:         msg.ID_Channel,
+        ID_USER:            userId,
+        content:            msg.content,
+        createdAt:          msg.createdAt,
+      },
     });
   } catch (e) {
+    console.error(e);
     return res.status(500).send({ message: e.message });
   }
 };

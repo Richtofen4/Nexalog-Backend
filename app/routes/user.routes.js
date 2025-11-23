@@ -15,6 +15,8 @@ module.exports = function (app) {
   app.get("/api/user/getAllUser", [authJwt.verifyToken], controller.getAllUser);
   app.get("/api/user/getBanUser", [authJwt.verifyToken], controller.getBanUser);
   app.get("/api/user/getUnbanUser", [authJwt.verifyToken], controller.getUnbanUser);
+  app.post("/api/user/unbanUser", [authJwt.verifyToken], controller.unbanUser);
+  app.post("/api/user/banUser", [authJwt.verifyToken], controller.banUser);
 
   app.get("/api/user/me", [authJwt.verifyToken], controller.me);
 };

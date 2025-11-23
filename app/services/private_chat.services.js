@@ -2,6 +2,7 @@ const db = require("../models");
 const { Op } = db.Sequelize;
 const PrivateConversation = db.PrivateConversation;
 const PrivateMessage = db.PrivateMessage;
+const notificationService = require("./notification.service");
 
 //Funkcja pomocnicza
 async function ensureMember(conversationId, userId) {
@@ -74,10 +75,8 @@ exports.getRecentMessages = async ({ req, res, userId, conversationId, limit, be
             ]
         });
 
-        //Zwróc listę
         const messages = rows.reverse();
 
-        //Kursor do paginacji
         const nextBeforeId = messages.length ? messages[0].ID_Message : null;
 
         return res.status(200).send({ messages, nextBeforeId});
@@ -100,14 +99,14 @@ exports.sendMessage = async ({ req, res, userId, conversationId, content }) => {
       return res.status(error.code).send({ message: error.message });
     }
 
-    const senderId    = Number(userId);
+    const senderId     = Number(userId);
     const participant1 = Number(conv.ID_USER1);
     const participant2 = Number(conv.ID_USER2);
     const recipientId  = (participant1 === senderId) ? participant2 : participant1;
 
     const msg = await PrivateMessage.create({
       ID_Conversation: conversationId,
-      ID_Sender: senderId,
+      ID_Sender:       senderId,
       content
     });
 
@@ -124,19 +123,26 @@ exports.sendMessage = async ({ req, res, userId, conversationId, content }) => {
 
     const io = req.app?.locals?.io;
     if (io) {
-      // czat w otwartej konwersacji
       io.to(`conv:${conversationId}`).emit("message:new", payload);
 
-      // bump listy u adresata
       io.to(`user:${recipientId}`).emit("inbox:new", payload);
       io.to(`user:${senderId}`).emit("inbox:new", payload);
     }
+
+    notificationService
+      .createForPrivateMessage({
+        ID_Conversation: msg.ID_Conversation,
+        ID_Sender:       msg.ID_Sender,
+        content:         msg.content
+      })
+      .catch(err => console.error("Private notif error:", err));
 
     return res.status(201).send({ message: "Wiadomość wysłana", data: msg });
   } catch (e) {
     return res.status(500).send({ message: e.message });
   }
 };
+
 
 exports.editMessage = async ({ req, res, userId, conversationId, messageId, content}) => {
     try {

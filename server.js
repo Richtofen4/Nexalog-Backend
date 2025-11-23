@@ -15,7 +15,7 @@ app.use((req, res, next) => {
 // Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-/* LOKALNIE
+
 //CORS
 const corsOptions = {
     origin: ['http://localhost:5173', 'http://localhost:3000', 'http://localhost:5174'],
@@ -23,39 +23,31 @@ const corsOptions = {
     allowedHeaders: ['Content-Type', 'x-access-token', 'Authorization', 'Accept', 'Origin'],
 };
 app.use(cors(corsOptions));
-*/
-
-//GLOBALNIE
-const allowedOrigins = [
-  'http://localhost:5173',
-  'http://localhost:3000',
-  'http://localhost:5174',
-  process.env.FRONTEND_URL,
-].filter(Boolean);
-
-const corsOptions = {
-  origin: allowedOrigins,
-  methods: ['GET', 'POST', 'DELETE', 'PUT'],
-  allowedHeaders: ['Content-Type', 'x-access-token', 'Authorization', 'Accept', 'Origin'],
-  credentials: true,
-};
-app.use(cors(corsOptions));
-
 
 //Swagger
 app.use('/swagger', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 //Database
 const db = require('./app/models');
+const notificationService = require("./app/services/notification.service");
 
 db.sequelize.sync().then(() => {
-    console.log('Database synchronized');
+  console.log('Database synchronized');
+
+  notificationService
+    .cleanupOldNotifications()
+    .catch(err => console.error("Initial notifications cleanup error:", err.message));
+
+  setInterval(() => {
+    notificationService
+      .cleanupOldNotifications()
+      .catch(err => console.error("Periodic notifications cleanup error:", err.message));
+  }, 60 * 60 * 1000);
 });
+
 
 // Socker.io
 const server = http.createServer(app);
-//LOKALNIE
-/*
 const io = new Server(server, {
   path: '/socket.io',
   cors: {
@@ -64,16 +56,7 @@ const io = new Server(server, {
     credentials: true,
   },
 });
-*/
-//GLOBALNIE
-const io = new Server(server, {
-  path: '/socket.io',
-  cors: {
-    origin: allowedOrigins,
-    methods: ['GET', 'POST'],
-    credentials: true,
-  },
-});
+
 app.locals.io = io;
 
 io.on("connection", (socket) => {
@@ -146,6 +129,7 @@ require('./app/routes/server_members.routes.js')(app);
 require('./app/routes/channel.routes.js')(app);
 require('./app/routes/private_chat.routes.js')(app);
 require('./app/routes/channel_message.routes.js')(app);
+require('./app/routes/notification.routes.js')(app);
 
 const PORT = process.env.PORT || 4000;
 server.listen(PORT, () => {

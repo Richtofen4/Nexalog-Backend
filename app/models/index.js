@@ -29,6 +29,7 @@ db.Channel = require('./channel.model.js')(sequelize, Sequelize);
 db.Channel_message = require('./channel_message.model.js')(sequelize, Sequelize);
 db.PrivateMessage = require('./private_message.model.js')(sequelize, Sequelize);
 db.PrivateConversation = require('./private_conversation.model.js')(sequelize, Sequelize);
+db.Notification = require("./notification.model.js")(sequelize, Sequelize);
 
 Object.keys(db).forEach(modelName => {
     if (db[modelName].associate) {

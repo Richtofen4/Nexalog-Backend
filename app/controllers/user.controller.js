@@ -50,7 +50,7 @@ exports.me = async (req, res) => {
     if (!Number.isFinite(id)) return res.status(401).json({ message: "Unauthorized" });
 
     const user = await User.findByPk(id, {
-      attributes: ["ID_USER", "username", "avatar", "email", "createdAt"],
+      attributes: ["ID_USER", "username", "avatar", "email", "isAdmin", "createdAt"],
     });
     if (!user) return res.status(404).json({ message: "Użytkownik nie istnieje" });
 

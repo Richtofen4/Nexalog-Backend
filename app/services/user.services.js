@@ -91,11 +91,11 @@ exports.logIn = async (req, res, jwt) => {
                 message: "Niepoprawne hasło"
             });
         }
-        /*
+        
         if (user.status === "Created" || user.status === "Pending") {
             return res.status(401).send({ message: "Zweryfikuj swój email"});
         }
-        */
+
         const token = jwt.sign({ ID_USER: user.ID_USER}, config.key.secret, {
             algorithm: "HS256",
             expiresIn: 7200

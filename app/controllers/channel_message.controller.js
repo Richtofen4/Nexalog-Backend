@@ -1,10 +1,12 @@
 const svc = require("../services/channel_message.service");
 
 exports.sendMessage = (req, res) => {
-  const userId   = req.userId;
-  const channelId= req.body?.channelId;
-  const content  = req.body?.content;
-  svc.sendMessage(req, res, userId, channelId, content);
+  const userId    = req.userId;
+  const channelId = req.body?.channelId;
+  const content   = req.body?.content;
+  const name      = req.body?.name ?? null;
+
+  svc.sendMessage(req, res, userId, channelId, content, name);
 };
 
 exports.getRecent = (req, res) => {
@@ -16,14 +18,14 @@ exports.getRecent = (req, res) => {
 };
 
 exports.editMessage = (req, res) => {
-  const userId   = req.userId;
-  const messageId= req.body?.messageId;
-  const content  = req.body?.content;
+  const userId    = req.userId;
+  const messageId = req.body?.messageId;
+  const content   = req.body?.content;
   svc.editMessage(req, res, userId, messageId, content);
 };
 
 exports.deleteMessage = (req, res) => {
-  const userId   = req.userId;
-  const messageId= req.body?.messageId;
+  const userId    = req.userId;
+  const messageId = req.body?.messageId;
   svc.deleteMessage(req, res, userId, messageId);
 };
