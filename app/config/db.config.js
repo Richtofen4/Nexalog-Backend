@@ -1,5 +1,5 @@
 // ustawienia dockera
-
+/*
 module.exports = {
     HOST: "localhost",
     USER: "postgres",
@@ -15,8 +15,8 @@ module.exports = {
     },
     logging: false
 };
+*/
 
-/*
 module.exports = {
   HOST: process.env.DB_HOST,
   USER: process.env.DB_USER,
@@ -31,4 +31,3 @@ module.exports = {
     idle: 10000,
   },
 };
-*/
