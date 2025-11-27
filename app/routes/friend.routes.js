@@ -16,7 +16,7 @@ module.exports = function (app) {
     app.delete("/api/friends/removeRequest", [authJwt.verifyToken], controller.removeRequest);
     app.put("/api/friends/blockUser", [authJwt.verifyToken], controller.blockUser);
     app.put ("/api/friends/unblockUser", [authJwt.verifyToken], controller.unblockUser);
-    app.put("/api/friends/unblockUser", [authJwt.verifyToken], controller.blockUser);
+    app.put("/api/friends/blockUser", [authJwt.verifyToken], controller.blockUser);
     app.get("/api/friends/myFriends", [authJwt.verifyToken], controller.myFriends);
     app.get("/api/friends/myFriendPending", [authJwt.verifyToken], controller.myFriendPending);
     app.get("/api/friends/myFriendBlocked", [authJwt.verifyToken], controller.myFriendBlocked);

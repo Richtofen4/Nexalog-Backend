@@ -292,46 +292,52 @@ exports.myFriend = async (req, res, userId) => {
       raw: true,
     });
 
-    const blockedIds = [
-      ...new Set(
-        blockedRels.map((r) => (r.ID_user === uid ? r.ID_friend : r.ID_user))
-      ),
-    ];
+    const blockedIdsRaw = blockedRels.map((r) =>
+      r.ID_user === uid ? r.ID_friend : r.ID_user
+    );
+    const blockedIds = [...new Set(blockedIdsRaw)];
 
-    const replacementsBase = {
-      uid,
-      blockedIds,
-      blockedIdsLen: blockedIds.length,
-    };
+    // budujemy fragment WHERE w zależności czy są blokady
+    const blockedWhere =
+      blockedIds.length > 0 ? ' AND u."ID_USER" NOT IN (:blockedIds)' : "";
 
     // 2) count – ile użytkowników
+    const countReplacements = blockedIds.length > 0
+      ? { uid, blockedIds }
+      : { uid };
+
     const [countRow] = await sequelize.query(
       `
       SELECT COUNT(*)::int AS "cnt"
       FROM "users" u
       WHERE u."ID_USER" <> :uid
-        AND (:blockedIdsLen = 0 OR u."ID_USER" NOT IN (:blockedIds))
+      ${blockedWhere}
     `,
       {
         type: QueryTypes.SELECT,
-        replacements: replacementsBase,
+        replacements: countReplacements,
       }
     );
-    const totalItems = countRow?.cnt ?? 0;
 
+    const totalItems = countRow?.cnt ?? 0;
     const totalPages = limit > 0 ? Math.ceil(totalItems / limit) : 0;
     const inRange =
       totalPages === 0 ? page === 0 : page >= 0 && page < totalPages;
+
     if (!inRange) {
       return res.status(404).send({
         message: "Strona poza zakresem",
         totalItems,
         totalPages,
-        requsetedPage: page,
+        requestedPage: page,
       });
     }
 
     // 3) właściwa lista
+    const listReplacements = blockedIds.length > 0
+      ? { uid, blockedIds, limit, offset }
+      : { uid, limit, offset };
+
     const users = await sequelize.query(
       `
       SELECT
@@ -351,17 +357,13 @@ exports.myFriend = async (req, res, userId) => {
         ), TIMESTAMP '1970-01-01') AS "lastActivityAt"
       FROM "users" u
       WHERE u."ID_USER" <> :uid
-        AND (:blockedIdsLen = 0 OR u."ID_USER" NOT IN (:blockedIds))
+      ${blockedWhere}
       ORDER BY "lastActivityAt" DESC, u."username" ASC
       LIMIT :limit OFFSET :offset
     `,
       {
         type: QueryTypes.SELECT,
-        replacements: {
-          ...replacementsBase,
-          limit,
-          offset,
-        },
+        replacements: listReplacements,
       }
     );
 
@@ -385,9 +387,11 @@ exports.myFriend = async (req, res, userId) => {
       pageSize: limit,
     });
   } catch (error) {
+    console.error("myFriend error:", error);
     return res.status(500).send({ message: error.message });
   }
 };
+
 
 
 
