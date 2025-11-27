@@ -297,7 +297,6 @@ exports.myFriend = async (req, res, userId) => {
     );
     const blockedIds = [...new Set(blockedIdsRaw)];
 
-    // budujemy fragment WHERE w zależności czy są blokady
     const blockedWhere =
       blockedIds.length > 0 ? ' AND u."ID_USER" NOT IN (:blockedIds)' : "";
 
