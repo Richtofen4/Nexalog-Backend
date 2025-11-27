@@ -223,23 +223,30 @@ exports.listMembers = async (req, res, userId, serverId) => {
     }
 
     const rows = await Server_member.findAll({
-  where: { ID_Server: sId },
-  include: [{
-    model: User,
-    as: "user",
-    attributes: ["ID_USER", "username", "avatar"],
-    required: true
-  }],
-  attributes: ["createdAt"],
-  order: [["createdAt", "ASC"]]
-});
+      where: { ID_Server: sId },
+      include: [{
+        model: User,
+        as: "user",
+        attributes: ["ID_USER", "username", "avatar"],
+        required: true
+      }],
+      attributes: ["createdAt"],
+      order: [["createdAt", "ASC"]]
+    });
 
-const members = rows.map(r => ({
-  ID_USER:  r.user.ID_USER,
-  username: r.user.username,
-  avatar:   r.user.avatar,
-  joinedAt: r.createdAt
-}));
+    const isUserOnline =
+      req.app?.locals?.isUserOnline && typeof req.app.locals.isUserOnline === "function"
+        ? req.app.locals.isUserOnline
+        : () => false;
+
+    const members = rows.map(r => ({
+      ID_USER:  r.user.ID_USER,
+      username: r.user.username,
+      avatar:   r.user.avatar,
+      joinedAt: r.createdAt,
+      online:   !!isUserOnline(r.user.ID_USER),
+      status:   isUserOnline(r.user.ID_USER) ? "active" : "inactive"
+    }));
 
     return res.status(200).send({
       message: "Pobrano listę członków.",

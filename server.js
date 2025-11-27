@@ -87,8 +87,20 @@ const io = new Server(server, {
 });
 app.locals.io = io;
 
+const onlineUsers = new Map();
+
+app.locals.isUserOnline = (id) => {
+  id = Number(id);
+  if (!Number.isFinite(id)) return false;
+  return onlineUsers.has(id);
+};
+
+app.locals.getOnlineUsers = () => Array.from(onlineUsers.keys());
+
 io.on("connection", (socket) => {
   console.log('Socket connected:', socket.id);
+
+  socket.data.userId = null;
 
   const parseConvId = (payload) => {
     if (payload && typeof payload === 'object') payload = payload.conversationId;
@@ -113,39 +125,66 @@ io.on("connection", (socket) => {
   socket.on('user:join', (uid) => {
     uid = Number(uid);
     if (!Number.isFinite(uid)) return;
+
+    socket.data.userId = uid;
+
+    const prev = onlineUsers.get(uid) || 0;
+    onlineUsers.set(uid, prev + 1);
+
     socket.join(`user:${uid}`);
-    console.log(`[socket] ${socket.id} join user:${uid}`);
+    console.log(`[socket] ${socket.id} join user:${uid}, count=${onlineUsers.get(uid)}`);
+
+    socket.broadcast.emit("presence:online", { userId: uid });
   });
 
-  socket.on('user:leave', (uid) => {
-    uid = Number(uid);
+  function handleUserLeave() {
+    const uid = Number(socket.data.userId);
     if (!Number.isFinite(uid)) return;
+
+    const prev = onlineUsers.get(uid) || 0;
+    const next = prev - 1;
+
+    if (next <= 0) {
+      onlineUsers.delete(uid);
+      console.log(`[socket] user ${uid} is now OFFLINE`);
+
+      io.emit("presence:offline", { userId: uid });
+    } else {
+      onlineUsers.set(uid, next);
+      console.log(`[socket] user ${uid} decreased sockets, count=${next}`);
+    }
+
     socket.leave(`user:${uid}`);
     console.log(`[socket] ${socket.id} leave user:${uid}`);
+    socket.data.userId = null;
+  }
+
+  socket.on('user:leave', handleUserLeave);
+
+  socket.on('disconnect', () => {
+    console.log('Socket disconnected:', socket.id);
+    handleUserLeave();
   });
 
-     socket.on("channel:join", (id) => {
-     id = Number(id);
-     if (!Number.isFinite(id)) return;
-     socket.join(`chan:${id}`);
-     console.log(`[socket] ${socket.id} join chan:${id}`);
-   });
-   socket.on("channel:leave", (id) => {
-     id = Number(id);
-     if (!Number.isFinite(id)) return;
-     socket.leave(`chan:${id}`);
-     console.log(`[socket] ${socket.id} leave chan:${id}`);
-   });
+  socket.on("channel:join", (id) => {
+    id = Number(id);
+    if (!Number.isFinite(id)) return;
+    socket.join(`chan:${id}`);
+    console.log(`[socket] ${socket.id} join chan:${id}`);
+  });
+
+  socket.on("channel:leave", (id) => {
+    id = Number(id);
+    if (!Number.isFinite(id)) return;
+    socket.leave(`chan:${id}`);
+    console.log(`[socket] ${socket.id} leave chan:${id}`);
+  });
 
   socket.on('conv:join', join);
   socket.on('conversation:join', join);
 
   socket.on('conv:leave', leave);
   socket.on('conversation:leave', leave);
-
-  socket.on('disconnect', () => {
-    console.log('Socket disconnected:', socket.id);
-  });
 });
 
 //routes
