@@ -4,6 +4,7 @@ const User = db.User;
 const PrivateConversation = db.PrivateConversation;
 const { Op } = db.Sequelize;
 const sequelize = db.sequelize;
+const { QueryTypes } = require("sequelize");
 
 //Funkcja paginacji
 const getPagination = (page, size) => {
@@ -254,35 +255,19 @@ exports.blockUser = async (req, res, userId, otherUserId) => {
 
 exports.unblockUser = async (req, res, userId, otherUserId) => {
   try {
-    if (!Number.isFinite(userId) || !Number.isFinite(otherUserId)) {
-      return res.status(400).send({ message: "Brak ID użytkowników" });
-    }
-    if (userId === otherUserId) {
-      return res.status(400).send({ message: "Nie możesz odblokować samego siebie" });
-    }
-
-    const user = await User.findByPk(userId);
-    if (!user) return res.status(404).send({ message: "Nie znaleziono użytkownika" });
-
     const low  = Math.min(userId, otherUserId);
     const high = Math.max(userId, otherUserId);
 
     const rel = await Friend.findOne({
-      where: { ID_user: low, ID_friend: high },
-      attributes: ["ID_Friend", "ID_user", "ID_friend", "status", "request_by"]
+      where: { ID_user: low, ID_friend: high, status: "blocked" },
     });
 
-    if (!rel || rel.status !== "blocked") {
-      return res.status(200).send({ message: "Użytkownik nie był zablokowany" });
-    }
-
-    if (Number(rel.request_by) !== Number(userId)) {
-      return res.status(403).send({ message: "Nie możesz odblokować – blokada nie została założona przez Ciebie" });
+    if (!rel) {
+      return res.status(404).send({ message: "Brak blokady dla tego użytkownika." });
     }
 
     await rel.destroy();
-
-    return res.status(200).send({ message: "Użytkownik odblokowany" });
+    return res.status(200).send({ message: "Użytkownik odblokowany." });
   } catch (err) {
     return res.status(500).send({ message: err.message });
   }
@@ -290,80 +275,107 @@ exports.unblockUser = async (req, res, userId, otherUserId) => {
 
 exports.myFriend = async (req, res, userId) => {
   try {
-    const { page, size } = normalizePageSize(req.query.page, req.query.size ?? req.query.limit);
+    const { page, size } = normalizePageSize(
+      req.query.page,
+      req.query.size ?? req.query.limit
+    );
     const { limit, offset } = getPagination(page, size);
     const uid = Number(userId) || 0;
 
-const otherIdSql = `
-  CASE
-    WHEN "user"."ID_USER" = ${uid} THEN "friend"."ID_USER"
-    ELSE "user"."ID_USER"
-  END
-`;
+    // 1) lista zablokowanych
+    const blockedRels = await Friend.findAll({
+      where: {
+        status: "blocked",
+        [Op.or]: [{ ID_user: uid }, { ID_friend: uid }],
+      },
+      attributes: ["ID_user", "ID_friend"],
+      raw: true,
+    });
 
-const lastActivityLiteral = sequelize.literal(`
-  COALESCE((
-    SELECT MAX(pm."createdAt")
-    FROM "private_messages" pm
-    WHERE pm."ID_Conversation" = (
-      SELECT pc."ID_Conversation"
-      FROM "private_conversation" pc
-      WHERE (pc."ID_USER1" = ${uid} AND pc."ID_USER2" = (${otherIdSql}))
-         OR (pc."ID_USER1" = (${otherIdSql}) AND pc."ID_USER2" = ${uid})
-      LIMIT 1
-    )
-  ), TIMESTAMP '1970-01-01')
-`);
+    const blockedIds = [
+      ...new Set(
+        blockedRels.map((r) => (r.ID_user === uid ? r.ID_friend : r.ID_user))
+      ),
+    ];
 
-const rowsAndCount = await Friend.findAndCountAll({
-  where: {
-    status: 'accepted',
-    [Op.or]: [{ ID_user: uid }, { ID_friend: uid }],
-  },
-  include: [
-    { model: User, as: 'user',   attributes: ['ID_USER','username','avatar','createdAt'], required:false },
-    { model: User, as: 'friend', attributes: ['ID_USER','username','avatar','createdAt'], required:false },
-  ],
-  attributes: {
-    include: [[lastActivityLiteral, 'lastActivityAt']],
-  },
-  order: [
-    [sequelize.col('lastActivityAt'), 'DESC'],
-    ['createdAt', 'DESC'],
-  ],
-  offset, limit, distinct:true, subQuery:false,
-});
+    const replacementsBase = {
+      uid,
+      blockedIds,
+      blockedIdsLen: blockedIds.length,
+    };
 
-    const totalItems = rowsAndCount.count;
-
-    const friends = rowsAndCount.rows
-      .map(row => {
-        const other = row.ID_user === uid ? row.friend : row.user;
-        if (!other) return null;
-        return {
-          FriendshipId: row.ID_Friend,
-          since: row.createdAt,
-          lastActivityAt: row.get?.('lastActivityAt') ?? row.dataValues?.lastActivityAt ?? null,
-          isRequester: row.request_by === uid,
-          user: {
-            ID_USER: other.ID_USER,
-            username: other.username,
-            avatar: other.avatar,
-          },
-        };
-      })
-      .filter(Boolean);
+    // 2) count – ile użytkowników
+    const [countRow] = await sequelize.query(
+      `
+      SELECT COUNT(*)::int AS "cnt"
+      FROM "users" u
+      WHERE u."ID_USER" <> :uid
+        AND (:blockedIdsLen = 0 OR u."ID_USER" NOT IN (:blockedIds))
+    `,
+      {
+        type: QueryTypes.SELECT,
+        replacements: replacementsBase,
+      }
+    );
+    const totalItems = countRow?.cnt ?? 0;
 
     const totalPages = limit > 0 ? Math.ceil(totalItems / limit) : 0;
-    const inRange = totalPages === 0 ? page === 0 : page >= 0 && page < totalPages;
+    const inRange =
+      totalPages === 0 ? page === 0 : page >= 0 && page < totalPages;
     if (!inRange) {
       return res.status(404).send({
-        message: 'Strona poza zakresem',
+        message: "Strona poza zakresem",
         totalItems,
         totalPages,
         requsetedPage: page,
       });
     }
+
+    // 3) właściwa lista
+    const users = await sequelize.query(
+      `
+      SELECT
+        u."ID_USER",
+        u."username",
+        u."avatar",
+        u."createdAt",
+        COALESCE((
+          SELECT MAX(pm."createdAt")
+          FROM "private_messages" pm
+          JOIN "private_conversation" pc
+            ON pc."ID_Conversation" = pm."ID_Conversation"
+          WHERE
+            (pc."ID_USER1" = :uid AND pc."ID_USER2" = u."ID_USER")
+            OR
+            (pc."ID_USER2" = :uid AND pc."ID_USER1" = u."ID_USER")
+        ), TIMESTAMP '1970-01-01') AS "lastActivityAt"
+      FROM "users" u
+      WHERE u."ID_USER" <> :uid
+        AND (:blockedIdsLen = 0 OR u."ID_USER" NOT IN (:blockedIds))
+      ORDER BY "lastActivityAt" DESC, u."username" ASC
+      LIMIT :limit OFFSET :offset
+    `,
+      {
+        type: QueryTypes.SELECT,
+        replacements: {
+          ...replacementsBase,
+          limit,
+          offset,
+        },
+      }
+    );
+
+    const friends = users.map((u) => ({
+      FriendshipId: null,
+      since: u.createdAt,
+      lastActivityAt: u.lastActivityAt,
+      isRequester: false,
+      user: {
+        ID_USER: u.ID_USER,
+        username: u.username,
+        avatar: u.avatar,
+      },
+    }));
 
     return res.status(200).send({
       totalItems,
@@ -376,6 +388,8 @@ const rowsAndCount = await Friend.findAndCountAll({
     return res.status(500).send({ message: error.message });
   }
 };
+
+
 
 
 
